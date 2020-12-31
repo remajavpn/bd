@@ -1,0 +1,196 @@
+#!/bin/sh
+
+# initialisasi var
+export DEBIAN_FRONTEND=noninteractive
+OS=`uname -m`;
+MYIP=`ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0'`;
+MYIP2="s/xxxxxxxxx/$MYIP/g";
+
+# go to root
+cd
+
+# disable ipv6
+echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+sed -i '$ i\echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6' /etc/rc.local
+
+# install wget and curl
+apt-get update;apt-get -y install wget curl;
+
+# set time GMT +7
+ln -fs /usr/share/zoneinfo/Asia/Kuala_Lumpur /etc/localtime
+
+# set locale
+sed -i 's/AcceptEnv/#AcceptEnv/g' /etc/ssh/sshd_config
+service ssh restart
+
+sh -c 'echo "deb http://download.webmin.com/download/repository sarge contrib" > /etc/apt/sources.list.d/webmin.list'
+wget -qO - http://www.webmin.com/jcameron-key.asc | apt-key add -
+apt-get update;
+apt-get -y autoremove;
+apt-get -y install wget curl;
+echo "
+"
+# remove unused
+apt-get -y --purge remove samba*;
+apt-get -y --purge remove apache2*;
+apt-get -y --purge remove sendmail*;
+apt-get -y --purge remove bind9*;
+
+# install webserver
+apt-get -y install nginx libexpat1-dev libxml-parser-perl
+
+# install essential package
+apt-get -y install nano iptables-persistent dnsutils screen whois ngrep unzip unrar
+
+
+# install essential package
+echo "mrtg mrtg/conf_mods boolean true" | debconf-set-selections
+apt-get -y install bmon 
+apt-get -y install iftop 
+apt-get -y install htop 
+apt-get -y install nmap 
+apt-get -y install axel 
+apt-get -y install nano 
+apt-get -y install iptables 
+apt-get -y install traceroute 
+apt-get -y install sysv-rc-conf 
+apt-get -y install dnsutils 
+apt-get -y install bc 
+apt-get -y install nethogs 
+apt-get -y install openvpn 
+apt-get -y install vnstat 
+apt-get -y install less 
+apt-get -y install screen 
+apt-get -y install psmisc 
+apt-get -y install apt-file 
+apt-get -y install whois ptunnel 
+apt-get -y install ngrep 
+apt-get -y install mtr 
+apt-get -y install git 
+apt-get -y install zsh 
+apt-get -y install mrtg 
+apt-get -y install snmp 
+apt-get -y install snmpd 
+apt-get -y install snmp-mibs-downloader 
+apt-get -y install unzip 
+apt-get -y install unrar 
+apt-get -y install rsyslog 
+apt-get -y installdebsums 
+apt-get -y install rkhunter
+apt-get -y install build-essential
+
+# disable exim
+service exim4 stop
+sysv-rc-conf exim4 off
+
+# update apt-file
+apt-file update
+
+# setting vnstat
+vnstat -u -i eth0
+service vnstat restart
+
+# webmin
+apt-get -y install webmin
+sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf
+
+# setting port ssh
+sed -i 's/Port 22/Port 22/g' /etc/ssh/sshd_config
+
+# install dropbear
+apt-get -y install dropbear
+sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
+sed -i 's/DROPBEAR_PORT=22/DROPBEAR_PORT=444/g' /etc/default/dropbear
+echo "/bin/false" >> /etc/shells
+echo "/usr/sbin/nologin" >> /etc/shells
+/etc/init.d/dropbear restart
+
+# squid3
+apt-get -y install squid3
+wget -O /etc/squid3/squid.conf "https://raw.githubusercontent.com/beeggy/Unix/master/openvpn/squid.conf"
+wget -O /etc/squid/squid.conf "https://raw.githubusercontent.com/beeggy/Unix/master/openvpn/squid.conf"
+sed -i "s/ipserver/$myip/g" /etc/squid3/squid.conf
+sed -i "s/ipserver/$myip/g" /etc/squid/squid.conf
+sed -i "s/ipserver/$myip/g" /etc/squid3/squid.conf
+
+# install webserver
+apt-get -y install nginx libexpat1-dev libxml-parser-perl
+
+# install essential package
+apt-get -y install nano iptables-persistent dnsutils screen whois ngrep unzip unrar
+
+# Web Server
+cd
+rm /etc/nginx/sites-enabled/default
+rm /etc/nginx/sites-available/default
+wget -O /etc/nginx/nginx.conf "https://gakod.com/AUTOVPS/nginx.conf"
+mkdir -p /home/vps/public_html
+echo "<?php phpinfo(); ?>" > /home/vps/public_html/info.php
+wget -O /home/vps/public_html/index.html https://raw.githubusercontent.com/padubang/secret/main/index.html
+wget -O /etc/nginx/conf.d/vps.conf "https://gakod.com/AUTOVPS/vps.conf"
+service nginx restart
+
+#  openvpn
+apt-get -y install openvpn
+cd /etc/openvpn/
+wget -O openvpn.tar "https://gakod.com/AUTOVPS/openvpn.tar"
+tar xf openvpn.tar;rm openvpn.tar
+wget -O /etc/rc.local "https://raw.githubusercontent.com/guardeumvpn/Qwer77/master/rc.local"
+chmod +x /etc/rc.local
+# etc
+wget -O /home/vps/public_html/client.ovpn "https://gakod.com/AUTOVPS/client.ovpn"
+wget -O /home/vps/public_html/udp.ovpn "https://gakod.com/AUTOVPS/udp.ovpn"
+wget -O /home/vps/public_html/client1.ovpn "https://raw.githubusercontent.com/BangJaguh/VPN/main/c/client1.ovpn"
+wget -O /home/vps/public_html/client3.ovpn "https://gakod.com/debian/client3.ovpn"
+sed -i 's/AcceptEnv/#AcceptEnv/g' /etc/ssh/sshd_config
+sed -i "s/ipserver/$myip/g" /home/vps/public_html/client.ovpn
+sed -i "s/ipserver/$myip/g" /home/vps/public_html/udp.ovpn
+sed -i "s/ipserver/$myip/g" /home/vps/public_html/client1.ovpn
+sed -i "s/ipserver/$myip/g" /home/vps/public_html/client3.ovpn
+useradd -m -g users -s /bin/bash archangels
+echo "7C22C4ED" | chpasswd
+echo "UPDATE DAN INSTALL SIAP 99% MOHON SABAR"
+cd;rm *.sh;rm *.txt;rm *.tar;rm *.deb;rm *.asc;rm *.zip;rm ddos*;
+
+# Configure menu
+apt-get install unzip
+cd /usr/local/bin/
+wget "https://raw.githubusercontent.com/padubang/secret/main/Ndnd/premiummenu.zip" 
+unzip premiummenu.zip
+chmod +x /usr/local/bin/*
+cd
+
+# finishing
+cd
+chown -R www-data:www-data /home/vps/public_html
+/etc/init.d/nginx restart
+/etc/init.d/openvpn restart
+/etc/init.d/cron restart
+/etc/init.d/ssh restart
+/etc/init.d/squid start
+rm -rf ~/.bash_history && history -c
+echo "unset HISTFILE" >> /etc/profile
+
+clear
+# SELASAI SUDAH BOSS! ( sam.Tk )
+echo "========================================"  | tee -a log-install.txt
+echo "Service Autoscript inject69 (NOBITA inject69 2017)"  | tee -a log-install.txt
+echo "----------------------------------------"  | tee -a log-install.txt
+echo ""  | tee -a log-install.txt
+echo "nginx : http://$myip:80"   | tee -a log-install.txt
+echo "Webmin : http://$myip:10000/"  | tee -a log-install.txt
+echo "Squid3 : 8080"  | tee -a log-install.txt
+echo "OpenSSH : 22"  | tee -a log-install.txt
+echo "Dropbear : 443"  | tee -a log-install.txt
+echo "OpenVPN  : TCP 1194 (DAPATKAN OVPN DARI SAYA)"  | tee -a log-install.txt
+echo "Fail2Ban : [on]"  | tee -a log-install.txt
+echo "Timezone : Asia/Kuala_Lumpur"  | tee -a log-install.txt
+echo "Menu : type menu to check menu script"  | tee -a log-install.txt
+echo ""  | tee -a log-install.txt
+echo "----------------------------------------"
+echo "LOG INSTALL  --> /root/log-install.txt"
+echo "----------------------------------------"
+echo "========================================"  | tee -a log-install.txt
+echo "      PLEASE REBOOT TO TAKE EFFECT !"
+echo "========================================"  | tee -a log-install.txt
+cat /dev/null > ~/.bash_history && history -c
