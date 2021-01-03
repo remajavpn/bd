@@ -113,7 +113,8 @@ cd /etc/openvpn/easy-rsa/
 	cp pki/issued/server.crt /etc/openvpn/
 	./easyrsa gen-dh
 	cp pki/dh.pem /etc/openvpn/
-        cp pki/private/ta.key /etc/openvpn/
+        openvpn --genkey --secret /etc/openvpn/ta.key
+        cp /etc/openvpn/ta.key /etc/openvpn/
 cd ~/openvpndeb/
 }
 
