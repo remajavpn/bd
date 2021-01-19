@@ -217,6 +217,7 @@ ca ca.crt
 cert server.crt
 key server.key
 dh dh.pem
+auth SHA512
 tls-auth ta.key 0
 topology subnet
 verify-client-cert none
@@ -330,12 +331,12 @@ resolv-retry infinite
 nobind
 persist-key
 persist-tun
+auth-user-pass
 remote-cert-tls server
-cipher AES-128-CBC
-comp-lzo
+auth SHA512
+cipher AES-256-CBC
 setenv opt block-outside-dns
 key-direction 1
-auth-user-pass
 verb 3" > /etc/openvpn/client-common.txt
 	newclient "$CLIENT"
 	echo ""
